@@ -1,0 +1,1683 @@
+{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "TypeSafe",
+    "description": "Ask yes/no questions, evaluate statements, select choices, or assign ratings to your content. Send your API key in the Authorization header as \u0060Bearer \u003CAPI_KEY\u003E\u0060. Use GET /v1/models to discover available model names.",
+    "version": "0.2.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.typesafe.ai"
+    }
+  ],
+  "paths": {
+    "/v1/models": {
+      "get": {
+        "summary": "List models",
+        "description": "List the models and aliases available to the authenticated account.\n\nPass a returned model name as \u0060model\u0060 in a POST /v1/systemone request.",
+        "operationId": "ModelsV1V1ModelsGet",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelMetadataList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBadRequestError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/systemone": {
+      "post": {
+        "summary": "System One",
+        "description": "Answer one or more questions about the content supplied in \u0060state\u0060.\n\nYou can mix question types in one request. Answers use the same names as the\nquestions, so you can match each result to its question. The response also includes\nthe model used and token usage.",
+        "operationId": "SystemoneV1SystemonePost",
+        "parameters": [
+          {
+            "name": "TypeSafe-Danger-Zone-Images",
+            "in": "header",
+            "description": "Set to true to use assets or box questions.",
+            "schema": {
+              "$ref": "#/components/schemas/TrueValueTypeSafeDangerZoneImages"
+            },
+            "example": "true"
+          },
+          {
+            "name": "TypeSafe-Danger-Zone-Long-Context",
+            "in": "header",
+            "description": "Set to true to use long context.",
+            "schema": {
+              "$ref": "#/components/schemas/TrueValueTypeSafeDangerZoneLongContext"
+            },
+            "example": "true"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemOneRequest"
+              },
+              "examples": {
+                "noul": {
+                  "summary": "Noul",
+                  "value": {
+                    "model": "jev-latest",
+                    "state": "I was charged twice for my subscription this month. Please refund the extra charge.",
+                    "questions": {
+                      "billing": {
+                        "type": "noul",
+                        "instructions": "Is this message about billing?"
+                      }
+                    }
+                  }
+                },
+                "choice": {
+                  "summary": "Choice",
+                  "value": {
+                    "model": "jev-latest",
+                    "state": "I was charged twice for my subscription this month. Please refund the extra charge.",
+                    "questions": {
+                      "tone": {
+                        "type": "choice",
+                        "instructions": "What is the tone of this message?",
+                        "criteria": {
+                          "angry": "An upset or hostile message",
+                          "calm": "A neutral or polite message",
+                          "excited": "An enthusiastic or eager message"
+                        }
+                      }
+                    }
+                  }
+                },
+                "score": {
+                  "summary": "Score",
+                  "value": {
+                    "model": "jev-latest",
+                    "state": "I was charged twice for my subscription this month. Please refund the extra charge.",
+                    "questions": {
+                      "urgency": {
+                        "type": "score",
+                        "instructions": "How urgent is this message?",
+                        "criteria": [
+                          "Can wait",
+                          "Needs attention this week",
+                          "Needs attention today"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "box": {
+                  "summary": "Box (requires TypeSafe-Danger-Zone-Images: true)",
+                  "value": {
+                    "model": "jev-preview",
+                    "state": "photo",
+                    "questions": {
+                      "red_rectangle": {
+                        "type": "box",
+                        "instructions": "Locate the red rectangle."
+                      }
+                    },
+                    "assets": {
+                      "photo": {
+                        "type": "image",
+                        "format": "png",
+                        "data_base64": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHElEQVR4nGP4TyJgoKcGBgbsaFQDfTUQB4aDBgDAen2fpitsVAAAAABJRU5ErkJggg=="
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemoneV1SystemonePostFormDataRequest"
+              },
+              "encoding": {
+                "request": {
+                  "contentType": "application/json"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemOneResponse"
+                },
+                "examples": {
+                  "noul": {
+                    "summary": "Noul",
+                    "value": {
+                      "model": "jev-latest",
+                      "answers": {
+                        "billing": {
+                          "type": "noul",
+                          "noul": 0.98
+                        }
+                      },
+                      "usage": {
+                        "input_tokens": 120,
+                        "output_tokens": 12
+                      }
+                    }
+                  },
+                  "choice": {
+                    "summary": "Choice",
+                    "value": {
+                      "model": "jev-latest",
+                      "answers": {
+                        "tone": {
+                          "type": "choice",
+                          "choice": "calm",
+                          "confidence": 0.7,
+                          "probabilities": {
+                            "angry": 0.15,
+                            "calm": 0.8,
+                            "excited": 0.05
+                          }
+                        }
+                      },
+                      "usage": {
+                        "input_tokens": 120,
+                        "output_tokens": 12
+                      }
+                    }
+                  },
+                  "score": {
+                    "summary": "Score",
+                    "value": {
+                      "model": "jev-latest",
+                      "answers": {
+                        "urgency": {
+                          "type": "score",
+                          "score": 1.7,
+                          "confidence": 0.55,
+                          "legend": {
+                            "0": "Can wait",
+                            "1": "Needs attention this week",
+                            "2": "Needs attention today"
+                          },
+                          "probabilities": {
+                            "0": 0.1,
+                            "1": 0.1,
+                            "2": 0.8
+                          }
+                        }
+                      },
+                      "usage": {
+                        "input_tokens": 120,
+                        "output_tokens": 12
+                      }
+                    }
+                  },
+                  "box": {
+                    "summary": "Box",
+                    "value": {
+                      "model": "jev-preview",
+                      "answers": {
+                        "red_rectangle": {
+                          "type": "box",
+                          "box": {
+                            "top": 0.2,
+                            "bottom": 0.66,
+                            "left": 0.19,
+                            "right": 0.68
+                          },
+                          "confidence": null
+                        }
+                      },
+                      "usage": {
+                        "input_tokens": 285,
+                        "output_tokens": 20
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBadRequestError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Answer": {
+        "oneOf": [
+          {
+            "title": "Noul",
+            "$ref": "#/components/schemas/NoulAnswer"
+          },
+          {
+            "title": "Choice",
+            "$ref": "#/components/schemas/ChoiceAnswer"
+          },
+          {
+            "title": "Score",
+            "$ref": "#/components/schemas/ScoreAnswer"
+          },
+          {
+            "title": "Box",
+            "$ref": "#/components/schemas/BoxAnswer"
+          }
+        ],
+        "description": "An answer whose type matches the corresponding question.",
+        "x-client-original-discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "noul": "#/components/schemas/NoulAnswer",
+            "choice": "#/components/schemas/ChoiceAnswer",
+            "score": "#/components/schemas/ScoreAnswer",
+            "box": "#/components/schemas/BoxAnswer"
+          }
+        }
+      },
+      "Asset": {
+        "title": "Asset",
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ImageType"
+          },
+          "format": {
+            "$ref": "#/components/schemas/AssetFormat"
+          },
+          "data_base64": {
+            "title": "Data Base64",
+            "type": "string",
+            "description": "Base64-encoded image data."
+          },
+          "part": {
+            "title": "Part",
+            "type": "string",
+            "description": "In a multipart request, the name of the image part this asset uses. With part, data_base64 is ignored."
+          }
+        },
+        "description": "An image that replaces its placeholder: its bytes in data_base64 with their format, or, in a multipart request, the name of the image part that holds them. Requests with images must send the header TypeSafe-Danger-Zone-Images: true."
+      },
+      "BoxAnswer": {
+        "title": "BoxAnswer",
+        "required": [
+          "type",
+          "box",
+          "confidence"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/BoxType"
+          },
+          "box": {
+            "description": "The box\u0027s edges as fractions of image height and width, from 0 to 1. Each coordinate is the expected value of its edge\u0027s predicted position.",
+            "examples": [
+              {
+                "bottom": 0.66,
+                "left": 0.19,
+                "right": 0.68,
+                "top": 0.2
+              }
+            ],
+            "$ref": "#/components/schemas/BoxCoordinates"
+          },
+          "confidence": {
+            "examples": [
+              null,
+              0.9
+            ],
+            "title": "Confidence",
+            "type": [
+              "null",
+              "number"
+            ],
+            "description": "Confidence for the given box, from 0 to 1, with 1 being more confident. Null when the model does not provide confidence."
+          }
+        },
+        "description": "A located box with normalized edge coordinates and confidence."
+      },
+      "BoxCoordinates": {
+        "title": "BoxCoordinates",
+        "required": [
+          "top",
+          "bottom",
+          "left",
+          "right"
+        ],
+        "type": "object",
+        "properties": {
+          "top": {
+            "examples": [
+              0.2
+            ],
+            "title": "Top",
+            "type": "number",
+            "description": "Top edge of the box, as a fraction of image height from the top (0-1)."
+          },
+          "bottom": {
+            "examples": [
+              0.66
+            ],
+            "title": "Bottom",
+            "type": "number",
+            "description": "Bottom edge of the box, as a fraction of image height from the top (0-1)."
+          },
+          "left": {
+            "examples": [
+              0.19
+            ],
+            "title": "Left",
+            "type": "number",
+            "description": "Left edge of the box, as a fraction of image width from the left (0-1)."
+          },
+          "right": {
+            "examples": [
+              0.68
+            ],
+            "title": "Right",
+            "type": "number",
+            "description": "Right edge of the box, as a fraction of image width from the left (0-1)."
+          }
+        },
+        "description": "Normalized box edges. Vertical coordinates are measured from the top of the image; horizontal coordinates are measured from the left."
+      },
+      "BoxQuestion": {
+        "title": "BoxQuestion",
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/BoxQuestionType"
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/BoxQuestionInstructions"
+          }
+        },
+        "description": "A question that locates what its instructions describe in the request\u0027s image. Requests with box questions must send the header TypeSafe-Danger-Zone-Images: true."
+      },
+      "ChoiceAnswer": {
+        "title": "ChoiceAnswer",
+        "required": [
+          "type",
+          "choice",
+          "confidence",
+          "probabilities"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ChoiceType"
+          },
+          "choice": {
+            "examples": [
+              "angry"
+            ],
+            "title": "Choice",
+            "type": "string",
+            "description": "The name of the choice with the highest probability among the question\u0027s criteria."
+          },
+          "confidence": {
+            "examples": [
+              0.9
+            ],
+            "title": "Confidence",
+            "type": "number",
+            "description": "Confidence in the selected choice, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain selections for review."
+          },
+          "probabilities": {
+            "$ref": "#/components/schemas/ChoiceAnswerProbabilitiesProperty"
+          }
+        },
+        "description": "The selected choice, confidence, and probabilities for a choice question."
+      },
+      "ChoiceQuestion": {
+        "title": "ChoiceQuestion",
+        "required": [
+          "type",
+          "criteria"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ChoiceQuestionType"
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/ChoiceQuestionInstructions"
+          },
+          "criteria": {
+            "$ref": "#/components/schemas/ChoiceQuestionCriteriaProperty"
+          }
+        },
+        "description": "A question that selects one option from the choices you define."
+      },
+      "HttpBadRequestError": {
+        "title": "HTTPBadRequestError",
+        "required": [
+          "detail"
+        ],
+        "type": "object",
+        "properties": {
+          "detail": {
+            "$ref": "#/components/schemas/HttpBadRequestErrorDetail"
+          }
+        },
+        "description": "Application validation failures returned with HTTP status 400."
+      },
+      "HttpValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "examples": [
+              [
+                {
+                  "loc": [
+                    "body",
+                    "state"
+                  ],
+                  "msg": "Field required",
+                  "type": "missing"
+                }
+              ]
+            ],
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "description": "Validation errors describing which request values are missing or invalid."
+          }
+        },
+        "description": "Request validation failures returned with HTTP status 422."
+      },
+      "ModelMetadata": {
+        "title": "ModelMetadata",
+        "required": [
+          "name",
+          "description",
+          "release_date"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "examples": [
+              "jev-latest"
+            ],
+            "title": "Name",
+            "type": "string",
+            "description": "Model name or alias accepted by the request\u0027s model field."
+          },
+          "description": {
+            "examples": [
+              "General-purpose system one model."
+            ],
+            "title": "Description",
+            "type": "string",
+            "description": "Human-readable description of the model and its capabilities."
+          },
+          "release_date": {
+            "examples": [
+              "2026-09-15"
+            ],
+            "title": "Release Date",
+            "type": "string",
+            "description": "Model release date, formatted as YYYY-MM-DD."
+          }
+        },
+        "description": "A model or model alias available to the authenticated account."
+      },
+      "ModelMetadataList": {
+        "title": "ModelMetadataList",
+        "required": [
+          "models"
+        ],
+        "type": "object",
+        "properties": {
+          "models": {
+            "examples": [
+              [
+                {
+                  "description": "General-purpose system one model.",
+                  "name": "jev-latest",
+                  "release_date": "2026-09-15"
+                }
+              ]
+            ],
+            "title": "Models",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelMetadata"
+            },
+            "description": "Available models and aliases. Use a model\u0027s name in POST /v1/systemone requests."
+          }
+        },
+        "description": "Models and aliases available to the authenticated account."
+      },
+      "NoulAnswer": {
+        "title": "NoulAnswer",
+        "required": [
+          "type",
+          "noul"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/NoulType"
+          },
+          "noul": {
+            "examples": [
+              0.98
+            ],
+            "title": "Noul",
+            "type": "number",
+            "description": "Probability of a yes answer or a true statement, from 0 to 1. Values near 1 favor yes or true, values near 0 favor no or false, and values near 0.5 indicate uncertainty."
+          }
+        },
+        "description": "The probability of a yes answer or a true statement."
+      },
+      "NoulCriteria": {
+        "title": "NoulCriteria",
+        "type": "object",
+        "properties": {
+          "true": {
+            "$ref": "#/components/schemas/NoulCriteriaTrue"
+          },
+          "false": {
+            "$ref": "#/components/schemas/NoulCriteriaFalse"
+          }
+        },
+        "description": "Criteria defining what counts as a yes or no answer."
+      },
+      "NoulQuestion": {
+        "title": "NoulQuestion",
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/NoulQuestionType"
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/NoulQuestionInstructions"
+          },
+          "criteria": {
+            "$ref": "#/components/schemas/NoulQuestionCriteria"
+          }
+        },
+        "description": "A yes/no question or statement, answered with the probability of yes or true."
+      },
+      "Question": {
+        "oneOf": [
+          {
+            "title": "Noul",
+            "$ref": "#/components/schemas/NoulQuestion"
+          },
+          {
+            "title": "Choice",
+            "$ref": "#/components/schemas/ChoiceQuestion"
+          },
+          {
+            "title": "Score",
+            "$ref": "#/components/schemas/ScoreQuestion"
+          },
+          {
+            "title": "Box",
+            "$ref": "#/components/schemas/BoxQuestion"
+          }
+        ],
+        "description": "A question about the supplied content.",
+        "x-client-original-discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "noul": "#/components/schemas/NoulQuestion",
+            "choice": "#/components/schemas/ChoiceQuestion",
+            "score": "#/components/schemas/ScoreQuestion",
+            "box": "#/components/schemas/BoxQuestion"
+          }
+        }
+      },
+      "ScoreAnswer": {
+        "title": "ScoreAnswer",
+        "required": [
+          "type",
+          "score",
+          "confidence",
+          "legend",
+          "probabilities"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ScoreType"
+          },
+          "score": {
+            "examples": [
+              1.7
+            ],
+            "title": "Score",
+            "type": "number",
+            "description": "Expected score: the probability-weighted average of the rubric levels. May fall between integer levels."
+          },
+          "confidence": {
+            "examples": [
+              0.9
+            ],
+            "title": "Confidence",
+            "type": "number",
+            "description": "Confidence in the score, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain ratings for review."
+          },
+          "legend": {
+            "$ref": "#/components/schemas/ScoreAnswerLegendProperty"
+          },
+          "probabilities": {
+            "$ref": "#/components/schemas/ScoreAnswerProbabilitiesProperty"
+          }
+        },
+        "description": "An expected score with its rubric, confidence, and score-level probabilities."
+      },
+      "ScoreQuestion": {
+        "title": "ScoreQuestion",
+        "required": [
+          "type",
+          "criteria"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ScoreQuestionType"
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/ScoreQuestionInstructions"
+          },
+          "criteria": {
+            "examples": [
+              [
+                "Can wait",
+                "Needs attention this week",
+                "Needs attention today"
+              ]
+            ],
+            "title": "Criteria",
+            "maxItems": 10,
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
+            },
+            "description": "Ordered descriptions of the score levels. Each description\u0027s position determines its score, starting at zero."
+          }
+        },
+        "description": "A question that assigns a score using an ordered rubric."
+      },
+      "SystemOneRequest": {
+        "title": "SystemOneRequest",
+        "required": [
+          "model",
+          "state",
+          "questions"
+        ],
+        "type": "object",
+        "properties": {
+          "model": {
+            "examples": [
+              "jev-latest"
+            ],
+            "title": "Model",
+            "type": "string",
+            "description": "Name or alias of the model to use. Available names are returned by GET /v1/models."
+          },
+          "state": {
+            "$ref": "#/components/schemas/SystemOneRequestState"
+          },
+          "questions": {
+            "$ref": "#/components/schemas/SystemOneRequestQuestionsProperty"
+          },
+          "assets": {
+            "$ref": "#/components/schemas/SystemOneRequestAssetsProperty"
+          }
+        },
+        "description": "Content and named questions to evaluate together using a TypeSafe model."
+      },
+      "SystemOneResponse": {
+        "title": "SystemOneResponse",
+        "required": [
+          "model",
+          "answers",
+          "usage"
+        ],
+        "type": "object",
+        "properties": {
+          "model": {
+            "examples": [
+              "jev-latest"
+            ],
+            "title": "Model",
+            "type": "string",
+            "description": "Name of the model that answered the questions. May differ from the alias supplied in the request."
+          },
+          "answers": {
+            "$ref": "#/components/schemas/SystemOneResponseAnswersProperty"
+          },
+          "usage": {
+            "description": "Input and output token counts for this evaluation.",
+            "examples": [
+              {
+                "input_tokens": 120,
+                "output_tokens": 12
+              }
+            ],
+            "$ref": "#/components/schemas/Usage"
+          }
+        },
+        "description": "Answers grouped by question name, with the model used and token usage."
+      },
+      "Usage": {
+        "title": "Usage",
+        "required": [
+          "input_tokens",
+          "output_tokens"
+        ],
+        "type": "object",
+        "properties": {
+          "input_tokens": {
+            "examples": [
+              120
+            ],
+            "title": "Input Tokens",
+            "type": "integer",
+            "description": "Number of billable input tokens used to evaluate the request."
+          },
+          "output_tokens": {
+            "examples": [
+              12
+            ],
+            "title": "Output Tokens",
+            "type": "integer",
+            "description": "Number of output tokens used to answer the questions. Output tokens are currently free of charge."
+          }
+        },
+        "description": "Token usage for the request."
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "examples": [
+              [
+                "body",
+                "questions",
+                "urgency",
+                "score",
+                "criteria"
+              ]
+            ],
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorLocItem"
+            },
+            "description": "Path to the invalid value: the request location followed by field names and array indices. May be empty."
+          },
+          "msg": {
+            "examples": [
+              "Field required"
+            ],
+            "title": "Message",
+            "type": "string",
+            "description": "Human-readable explanation of the validation failure. May be shortened with \u2026."
+          },
+          "type": {
+            "examples": [
+              "missing"
+            ],
+            "title": "Error Type",
+            "type": "string",
+            "description": "Machine-readable validation error code."
+          },
+          "input": {
+            "examples": [
+              "{\u0022type\u0022:\u0022score\u0022}"
+            ],
+            "title": "Input",
+            "type": "string",
+            "description": "Text preview of the rejected input. May be shortened with \u2026."
+          },
+          "ctx": {
+            "$ref": "#/components/schemas/ValidationErrorCtxProperty"
+          }
+        },
+        "description": "A request validation error at a specific field or array element."
+      },
+      "SystemoneV1SystemonePostFormDataRequest": {
+        "required": [
+          "request"
+        ],
+        "type": "object",
+        "properties": {
+          "request": {
+            "contentMediaType": "application/json",
+            "contentSchema": {
+              "$ref": "#/components/schemas/SystemOneRequest"
+            },
+            "description": "The JSON request, as the first part."
+          }
+        },
+        "additionalProperties": {
+          "contentMediaType": "image/*",
+          "type": "string",
+          "description": "An image, named by the asset part that uses it."
+        },
+        "description": "The JSON request as the first part, named request, then each image as its own part. Every image part needs a unique, non-empty name and must be used by exactly one asset\u0027s part."
+      },
+      "BoxQuestionInstructions": {
+        "title": "Instructions",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "What to locate in the image.",
+        "x-accepts": "string | object | array"
+      },
+      "ChoiceQuestionInstructions": {
+        "examples": [
+          "What is the tone of this message?"
+        ],
+        "title": "Instructions",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "What the model should decide when choosing an option.",
+        "x-accepts": "string | object | array"
+      },
+      "ChoiceQuestionCriteriaAdditionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "x-accepts": "string | object | array"
+      },
+      "HttpBadRequestErrorDetail": {
+        "title": "Detail",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          }
+        ],
+        "description": "Explanation of the invalid request. String details and message fields are bounded, with shortened text ending with \u2026."
+      },
+      "NoulCriteriaTrue": {
+        "examples": [
+          "The message is unsolicited advertising."
+        ],
+        "title": "True",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "What counts as a yes answer.",
+        "x-accepts": "string | object | array"
+      },
+      "NoulCriteriaFalse": {
+        "examples": [
+          "The message is a legitimate conversation."
+        ],
+        "title": "False",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "What counts as a no answer.",
+        "x-accepts": "string | object | array"
+      },
+      "NoulQuestionInstructions": {
+        "examples": [
+          "Is this message spam?",
+          "This message contains unsolicited advertising.",
+          {
+            "task": "Identify unsolicited advertising."
+          }
+        ],
+        "title": "Instructions",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The yes/no question or statement to evaluate.",
+        "x-accepts": "string | object | array"
+      },
+      "NoulQuestionCriteria": {
+        "examples": [
+          {
+            "false": "A legitimate conversation",
+            "true": "Unsolicited advertising"
+          }
+        ],
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/NoulCriteria"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Criteria clarifying what counts as a yes or no answer."
+      },
+      "ScoreAnswerLegendAdditionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          }
+        ],
+        "x-accepts": "string | object | array"
+      },
+      "ScoreQuestionInstructions": {
+        "examples": [
+          "How urgent is this message?"
+        ],
+        "title": "Instructions",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "What the model should rate.",
+        "x-accepts": "string | object | array"
+      },
+      "ScoreQuestionCriteriaItem": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          }
+        ],
+        "x-accepts": "string | object | array"
+      },
+      "SystemOneRequestState": {
+        "examples": [
+          "I was charged twice. Please help.",
+          {
+            "message": "Please help.",
+            "subject": "Duplicate charge"
+          }
+        ],
+        "title": "State",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          },
+          {
+            "type": "array",
+            "items": {}
+          }
+        ],
+        "description": "The content all questions in this request refer to.",
+        "x-accepts": "string | object | array"
+      },
+      "ValidationErrorLocItem": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          }
+        ]
+      },
+      "ChoiceAnswerProbabilities": {
+        "examples": [
+          {
+            "angry": 0.8,
+            "calm": 0.1,
+            "excited": 0.1
+          }
+        ],
+        "title": "Probabilities",
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "Probability of each choice in criteria, keyed by choice name, from 0 to 1. Shows how likely the alternatives are; values sum to approximately 1."
+      },
+      "ChoiceQuestionCriteria": {
+        "examples": [
+          {
+            "angry": "An upset or hostile message",
+            "calm": "A neutral or polite message",
+            "excited": "An enthusiastic or eager message"
+          }
+        ],
+        "title": "Criteria",
+        "maxProperties": 255,
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ChoiceQuestionCriteriaAdditionalProperties"
+        },
+        "description": "Choice names and descriptions of when each applies. A choice without a description is interpreted by its name alone."
+      },
+      "ScoreAnswerLegend": {
+        "examples": [
+          {
+            "0": "Can wait",
+            "1": "Needs attention this week",
+            "2": "Needs attention today"
+          }
+        ],
+        "title": "Legend",
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
+        },
+        "description": "The requested criteria mapped to their score levels, so you can interpret the score."
+      },
+      "ScoreAnswerProbabilities": {
+        "examples": [
+          {
+            "0": 0.1,
+            "1": 0.1,
+            "2": 0.8
+          }
+        ],
+        "title": "Probabilities",
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "Probability of each score level, from 0 to 1, using the same keys as legend. Shows how likely the alternatives are; values sum to approximately 1."
+      },
+      "SystemOneRequestQuestions": {
+        "examples": [
+          {
+            "billing": {
+              "instructions": "Is this message about billing?",
+              "type": "noul"
+            }
+          }
+        ],
+        "title": "Questions",
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Question"
+        },
+        "description": "Questions to ask about the content, each with a name you choose. The response uses those names to identify the answers."
+      },
+      "SystemOneRequestAssets": {
+        "title": "Assets",
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Asset"
+        },
+        "description": "Media assets keyed by an opaque placeholder (recommend a per-image UUID). Each placeholder, wherever it appears as or inside a string in state, question instructions, or criteria, is replaced with the asset. Image assets require a vision-language model."
+      },
+      "SystemOneResponseAnswers": {
+        "examples": [
+          {
+            "billing": {
+              "noul": 0.98,
+              "type": "noul"
+            }
+          }
+        ],
+        "title": "Answers",
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Answer"
+        },
+        "description": "Answers keyed by the question names supplied in the request. Each answer\u0027s type matches its question\u0027s type."
+      },
+      "ValidationErrorCtx": {
+        "examples": [
+          {
+            "min_length": 1
+          }
+        ],
+        "title": "Context",
+        "type": "object",
+        "description": "Additional context used to explain the validation failure. Entries may be omitted or shortened."
+      },
+      "ExamplePayload": {
+        "type": "object",
+        "description": "Placeholder schema for path example refs"
+      },
+      "ChoiceAnswerProbabilitiesProperty": {
+        "examples": [
+          {
+            "angry": 0.8,
+            "calm": 0.1,
+            "excited": 0.1
+          }
+        ],
+        "title": "Probabilities",
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "Probability of each choice in criteria, keyed by choice name, from 0 to 1. Shows how likely the alternatives are; values sum to approximately 1."
+      },
+      "ChoiceQuestionCriteriaProperty": {
+        "examples": [
+          {
+            "angry": "An upset or hostile message",
+            "calm": "A neutral or polite message",
+            "excited": "An enthusiastic or eager message"
+          }
+        ],
+        "title": "Criteria",
+        "maxProperties": 255,
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ChoiceQuestionCriteriaAdditionalProperties"
+        },
+        "description": "Choice names and descriptions of when each applies. A choice without a description is interpreted by its name alone."
+      },
+      "ScoreAnswerLegendProperty": {
+        "examples": [
+          {
+            "0": "Can wait",
+            "1": "Needs attention this week",
+            "2": "Needs attention today"
+          }
+        ],
+        "title": "Legend",
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
+        },
+        "description": "The requested criteria mapped to their score levels, so you can interpret the score."
+      },
+      "ScoreAnswerProbabilitiesProperty": {
+        "examples": [
+          {
+            "0": 0.1,
+            "1": 0.1,
+            "2": 0.8
+          }
+        ],
+        "title": "Probabilities",
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "Probability of each score level, from 0 to 1, using the same keys as legend. Shows how likely the alternatives are; values sum to approximately 1."
+      },
+      "SystemOneRequestQuestionsProperty": {
+        "examples": [
+          {
+            "billing": {
+              "instructions": "Is this message about billing?",
+              "type": "noul"
+            }
+          }
+        ],
+        "title": "Questions",
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Question"
+        },
+        "description": "Questions to ask about the content, each with a name you choose. The response uses those names to identify the answers."
+      },
+      "SystemOneRequestAssetsProperty": {
+        "title": "Assets",
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Asset"
+        },
+        "description": "Media assets keyed by an opaque placeholder (recommend a per-image UUID). Each placeholder, wherever it appears as or inside a string in state, question instructions, or criteria, is replaced with the asset. Image assets require a vision-language model."
+      },
+      "SystemOneResponseAnswersProperty": {
+        "examples": [
+          {
+            "billing": {
+              "noul": 0.98,
+              "type": "noul"
+            }
+          }
+        ],
+        "title": "Answers",
+        "minProperties": 1,
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Answer"
+        },
+        "description": "Answers keyed by the question names supplied in the request. Each answer\u0027s type matches its question\u0027s type."
+      },
+      "ValidationErrorCtxProperty": {
+        "examples": [
+          {
+            "min_length": 1
+          }
+        ],
+        "title": "Context",
+        "type": "object",
+        "description": "Additional context used to explain the validation failure. Entries may be omitted or shortened."
+      },
+      "ImageType": {
+        "title": "Type",
+        "enum": [
+          "image"
+        ],
+        "type": "string",
+        "description": "Identifies an image asset.",
+        "x-client-original-const": "image",
+        "x-ms-enum": {
+          "name": "ImageType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "image",
+              "name": "Image"
+            }
+          ]
+        }
+      },
+      "AssetFormat": {
+        "title": "Format",
+        "enum": [
+          "png",
+          "jpg",
+          "jpeg"
+        ],
+        "type": "string",
+        "description": "The image format, required with data_base64. The actual format is detected from the bytes.",
+        "x-ms-enum": {
+          "name": "AssetFormat",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "png",
+              "name": "Png"
+            },
+            {
+              "value": "jpg",
+              "name": "Jpg"
+            },
+            {
+              "value": "jpeg",
+              "name": "Jpeg"
+            }
+          ]
+        }
+      },
+      "BoxType": {
+        "examples": [
+          "box"
+        ],
+        "title": "Type",
+        "enum": [
+          "box"
+        ],
+        "type": "string",
+        "description": "Identifies a box answer.",
+        "x-client-original-const": "box",
+        "x-ms-enum": {
+          "name": "BoxType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "box",
+              "name": "Box"
+            }
+          ]
+        }
+      },
+      "BoxQuestionType": {
+        "title": "Type",
+        "enum": [
+          "box"
+        ],
+        "type": "string",
+        "description": "Identifies a box question.",
+        "x-client-original-const": "box",
+        "x-ms-enum": {
+          "name": "BoxQuestionType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "box",
+              "name": "Box"
+            }
+          ]
+        }
+      },
+      "ChoiceType": {
+        "examples": [
+          "choice"
+        ],
+        "title": "Type",
+        "enum": [
+          "choice"
+        ],
+        "type": "string",
+        "description": "Identifies a selection from the requested choices.",
+        "x-client-original-const": "choice",
+        "x-ms-enum": {
+          "name": "ChoiceType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "choice",
+              "name": "Choice"
+            }
+          ]
+        }
+      },
+      "ChoiceQuestionType": {
+        "examples": [
+          "choice"
+        ],
+        "title": "Type",
+        "enum": [
+          "choice"
+        ],
+        "type": "string",
+        "description": "Identifies a question that selects one of the choices in criteria.",
+        "x-client-original-const": "choice",
+        "x-ms-enum": {
+          "name": "ChoiceQuestionType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "choice",
+              "name": "Choice"
+            }
+          ]
+        }
+      },
+      "NoulType": {
+        "examples": [
+          "noul"
+        ],
+        "title": "Type",
+        "enum": [
+          "noul"
+        ],
+        "type": "string",
+        "description": "Identifies a yes/no answer.",
+        "x-client-original-const": "noul",
+        "x-ms-enum": {
+          "name": "NoulType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "noul",
+              "name": "Noul"
+            }
+          ]
+        }
+      },
+      "NoulQuestionType": {
+        "examples": [
+          "noul"
+        ],
+        "title": "Type",
+        "enum": [
+          "noul"
+        ],
+        "type": "string",
+        "description": "Identifies a yes/no question or statement.",
+        "x-client-original-const": "noul",
+        "x-ms-enum": {
+          "name": "NoulQuestionType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "noul",
+              "name": "Noul"
+            }
+          ]
+        }
+      },
+      "ScoreType": {
+        "examples": [
+          "score"
+        ],
+        "title": "Type",
+        "enum": [
+          "score"
+        ],
+        "type": "string",
+        "description": "Identifies a rating against the requested score levels.",
+        "x-client-original-const": "score",
+        "x-ms-enum": {
+          "name": "ScoreType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "score",
+              "name": "Score"
+            }
+          ]
+        }
+      },
+      "ScoreQuestionType": {
+        "examples": [
+          "score"
+        ],
+        "title": "Type",
+        "enum": [
+          "score"
+        ],
+        "type": "string",
+        "description": "Identifies a question that rates the content using the levels in criteria.",
+        "x-client-original-const": "score",
+        "x-ms-enum": {
+          "name": "ScoreQuestionType",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "score",
+              "name": "Score"
+            }
+          ]
+        }
+      },
+      "TrueValueTypeSafeDangerZoneImages": {
+        "enum": [
+          "true"
+        ],
+        "type": "string",
+        "x-ms-enum": {
+          "name": "TrueValueTypeSafeDangerZoneImages",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "true",
+              "name": "TrueValue"
+            }
+          ]
+        }
+      },
+      "TrueValueTypeSafeDangerZoneLongContext": {
+        "enum": [
+          "true"
+        ],
+        "type": "string",
+        "x-ms-enum": {
+          "name": "TrueValueTypeSafeDangerZoneLongContext",
+          "modelAsString": false,
+          "values": [
+            {
+              "value": "true",
+              "name": "TrueValue"
+            }
+          ]
+        }
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
