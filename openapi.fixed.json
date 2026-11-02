@@ -303,24 +303,6 @@
   "components": {
     "schemas": {
       "Answer": {
-        "oneOf": [
-          {
-            "title": "Noul",
-            "$ref": "#/components/schemas/NoulAnswer"
-          },
-          {
-            "title": "Choice",
-            "$ref": "#/components/schemas/ChoiceAnswer"
-          },
-          {
-            "title": "Score",
-            "$ref": "#/components/schemas/ScoreAnswer"
-          },
-          {
-            "title": "Box",
-            "$ref": "#/components/schemas/BoxAnswer"
-          }
-        ],
         "description": "An answer whose type matches the corresponding question.",
         "x-client-original-discriminator": {
           "propertyName": "type",
@@ -330,7 +312,64 @@
             "score": "#/components/schemas/ScoreAnswer",
             "box": "#/components/schemas/BoxAnswer"
           }
-        }
+        },
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "noul": "#/components/schemas/AnswerNoulAnswer",
+            "choice": "#/components/schemas/AnswerChoiceAnswer",
+            "score": "#/components/schemas/AnswerScoreAnswer",
+            "box": "#/components/schemas/AnswerBoxAnswer"
+          }
+        },
+        "x-client-original-tagged-union": {
+          "oneOf": [
+            {
+              "title": "Noul",
+              "$ref": "#/components/schemas/NoulAnswer"
+            },
+            {
+              "title": "Choice",
+              "$ref": "#/components/schemas/ChoiceAnswer"
+            },
+            {
+              "title": "Score",
+              "$ref": "#/components/schemas/ScoreAnswer"
+            },
+            {
+              "title": "Box",
+              "$ref": "#/components/schemas/BoxAnswer"
+            }
+          ],
+          "description": "An answer whose type matches the corresponding question.",
+          "x-client-original-discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "noul": "#/components/schemas/NoulAnswer",
+              "choice": "#/components/schemas/ChoiceAnswer",
+              "score": "#/components/schemas/ScoreAnswer",
+              "box": "#/components/schemas/BoxAnswer"
+            }
+          },
+          "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "noul": "#/components/schemas/NoulAnswer",
+              "choice": "#/components/schemas/ChoiceAnswer",
+              "score": "#/components/schemas/ScoreAnswer",
+              "box": "#/components/schemas/BoxAnswer"
+            }
+          }
+        },
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
       },
       "Asset": {
         "title": "Asset",
@@ -354,45 +393,6 @@
           }
         },
         "description": "An image that replaces its placeholder: its bytes in data_base64 with their format, or, in a multipart request, the name of the image part that holds them. Requests with images must send the header TypeSafe-Danger-Zone-Images: true."
-      },
-      "BoxAnswer": {
-        "title": "BoxAnswer",
-        "required": [
-          "type",
-          "box",
-          "confidence"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/BoxType"
-          },
-          "box": {
-            "description": "The box\u0027s edges as fractions of image height and width, from 0 to 1. Each coordinate is the expected value of its edge\u0027s predicted position.",
-            "examples": [
-              {
-                "bottom": 0.66,
-                "left": 0.19,
-                "right": 0.68,
-                "top": 0.2
-              }
-            ],
-            "$ref": "#/components/schemas/BoxCoordinates"
-          },
-          "confidence": {
-            "examples": [
-              null,
-              0.9
-            ],
-            "title": "Confidence",
-            "type": [
-              "null",
-              "number"
-            ],
-            "description": "Confidence for the given box, from 0 to 1, with 1 being more confident. Null when the model does not provide confidence."
-          }
-        },
-        "description": "A located box with normalized edge coordinates and confidence."
       },
       "BoxCoordinates": {
         "title": "BoxCoordinates",
@@ -438,77 +438,6 @@
           }
         },
         "description": "Normalized box edges. Vertical coordinates are measured from the top of the image; horizontal coordinates are measured from the left."
-      },
-      "BoxQuestion": {
-        "title": "BoxQuestion",
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/BoxQuestionType"
-          },
-          "instructions": {
-            "$ref": "#/components/schemas/BoxQuestionInstructions"
-          }
-        },
-        "description": "A question that locates what its instructions describe in the request\u0027s image. Requests with box questions must send the header TypeSafe-Danger-Zone-Images: true."
-      },
-      "ChoiceAnswer": {
-        "title": "ChoiceAnswer",
-        "required": [
-          "type",
-          "choice",
-          "confidence",
-          "probabilities"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/ChoiceType"
-          },
-          "choice": {
-            "examples": [
-              "angry"
-            ],
-            "title": "Choice",
-            "type": "string",
-            "description": "The name of the choice with the highest probability among the question\u0027s criteria."
-          },
-          "confidence": {
-            "examples": [
-              0.9
-            ],
-            "title": "Confidence",
-            "type": "number",
-            "description": "Confidence in the selected choice, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain selections for review."
-          },
-          "probabilities": {
-            "$ref": "#/components/schemas/ChoiceAnswerProbabilitiesProperty"
-          }
-        },
-        "description": "The selected choice, confidence, and probabilities for a choice question."
-      },
-      "ChoiceQuestion": {
-        "title": "ChoiceQuestion",
-        "required": [
-          "type",
-          "criteria"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/ChoiceQuestionType"
-          },
-          "instructions": {
-            "$ref": "#/components/schemas/ChoiceQuestionInstructions"
-          },
-          "criteria": {
-            "$ref": "#/components/schemas/ChoiceQuestionCriteriaProperty"
-          }
-        },
-        "description": "A question that selects one option from the choices you define."
       },
       "HttpBadRequestError": {
         "title": "HTTPBadRequestError",
@@ -613,79 +542,7 @@
         },
         "description": "Models and aliases available to the authenticated account."
       },
-      "NoulAnswer": {
-        "title": "NoulAnswer",
-        "required": [
-          "type",
-          "noul"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/NoulType"
-          },
-          "noul": {
-            "examples": [
-              0.98
-            ],
-            "title": "Noul",
-            "type": "number",
-            "description": "Probability of a yes answer or a true statement, from 0 to 1. Values near 1 favor yes or true, values near 0 favor no or false, and values near 0.5 indicate uncertainty."
-          }
-        },
-        "description": "The probability of a yes answer or a true statement."
-      },
-      "NoulCriteria": {
-        "title": "NoulCriteria",
-        "type": "object",
-        "properties": {
-          "true": {
-            "$ref": "#/components/schemas/NoulCriteriaTrue"
-          },
-          "false": {
-            "$ref": "#/components/schemas/NoulCriteriaFalse"
-          }
-        },
-        "description": "Criteria defining what counts as a yes or no answer."
-      },
-      "NoulQuestion": {
-        "title": "NoulQuestion",
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/NoulQuestionType"
-          },
-          "instructions": {
-            "$ref": "#/components/schemas/NoulQuestionInstructions"
-          },
-          "criteria": {
-            "$ref": "#/components/schemas/NoulQuestionCriteria"
-          }
-        },
-        "description": "A yes/no question or statement, answered with the probability of yes or true."
-      },
       "Question": {
-        "oneOf": [
-          {
-            "title": "Noul",
-            "$ref": "#/components/schemas/NoulQuestion"
-          },
-          {
-            "title": "Choice",
-            "$ref": "#/components/schemas/ChoiceQuestion"
-          },
-          {
-            "title": "Score",
-            "$ref": "#/components/schemas/ScoreQuestion"
-          },
-          {
-            "title": "Box",
-            "$ref": "#/components/schemas/BoxQuestion"
-          }
-        ],
         "description": "A question about the supplied content.",
         "x-client-original-discriminator": {
           "propertyName": "type",
@@ -695,80 +552,64 @@
             "score": "#/components/schemas/ScoreQuestion",
             "box": "#/components/schemas/BoxQuestion"
           }
-        }
-      },
-      "ScoreAnswer": {
-        "title": "ScoreAnswer",
-        "required": [
-          "type",
-          "score",
-          "confidence",
-          "legend",
-          "probabilities"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/ScoreType"
-          },
-          "score": {
-            "examples": [
-              1.7
-            ],
-            "title": "Score",
-            "type": "number",
-            "description": "Expected score: the probability-weighted average of the rubric levels. May fall between integer levels."
-          },
-          "confidence": {
-            "examples": [
-              0.9
-            ],
-            "title": "Confidence",
-            "type": "number",
-            "description": "Confidence in the score, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain ratings for review."
-          },
-          "legend": {
-            "$ref": "#/components/schemas/ScoreAnswerLegendProperty"
-          },
-          "probabilities": {
-            "$ref": "#/components/schemas/ScoreAnswerProbabilitiesProperty"
+        },
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "noul": "#/components/schemas/QuestionNoulQuestion",
+            "choice": "#/components/schemas/QuestionChoiceQuestion",
+            "score": "#/components/schemas/QuestionScoreQuestion",
+            "box": "#/components/schemas/QuestionBoxQuestion"
           }
         },
-        "description": "An expected score with its rubric, confidence, and score-level probabilities."
-      },
-      "ScoreQuestion": {
-        "title": "ScoreQuestion",
-        "required": [
-          "type",
-          "criteria"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/ScoreQuestionType"
-          },
-          "instructions": {
-            "$ref": "#/components/schemas/ScoreQuestionInstructions"
-          },
-          "criteria": {
-            "examples": [
-              [
-                "Can wait",
-                "Needs attention this week",
-                "Needs attention today"
-              ]
-            ],
-            "title": "Criteria",
-            "maxItems": 10,
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
+        "x-client-original-tagged-union": {
+          "oneOf": [
+            {
+              "title": "Noul",
+              "$ref": "#/components/schemas/NoulQuestion"
             },
-            "description": "Ordered descriptions of the score levels. Each description\u0027s position determines its score, starting at zero."
+            {
+              "title": "Choice",
+              "$ref": "#/components/schemas/ChoiceQuestion"
+            },
+            {
+              "title": "Score",
+              "$ref": "#/components/schemas/ScoreQuestion"
+            },
+            {
+              "title": "Box",
+              "$ref": "#/components/schemas/BoxQuestion"
+            }
+          ],
+          "description": "A question about the supplied content.",
+          "x-client-original-discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "noul": "#/components/schemas/NoulQuestion",
+              "choice": "#/components/schemas/ChoiceQuestion",
+              "score": "#/components/schemas/ScoreQuestion",
+              "box": "#/components/schemas/BoxQuestion"
+            }
+          },
+          "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+              "noul": "#/components/schemas/NoulQuestion",
+              "choice": "#/components/schemas/ChoiceQuestion",
+              "score": "#/components/schemas/ScoreQuestion",
+              "box": "#/components/schemas/BoxQuestion"
+            }
           }
         },
-        "description": "A question that assigns a score using an ordered rubric."
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
       },
       "SystemOneRequest": {
         "title": "SystemOneRequest",
@@ -1083,21 +924,43 @@
         "x-accepts": "string | object | array"
       },
       "NoulQuestionCriteria": {
+        "title": "NoulCriteria",
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "true": {
+            "$ref": "#/components/schemas/NoulCriteriaTrue"
+          },
+          "false": {
+            "$ref": "#/components/schemas/NoulCriteriaFalse"
+          }
+        },
+        "description": "Criteria clarifying what counts as a yes or no answer.",
         "examples": [
           {
             "false": "A legitimate conversation",
             "true": "Unsolicited advertising"
           }
         ],
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/NoulCriteria"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "description": "Criteria clarifying what counts as a yes or no answer."
+        "x-client-original-nullable-union": {
+          "examples": [
+            {
+              "false": "A legitimate conversation",
+              "true": "Unsolicited advertising"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/NoulCriteria"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Criteria clarifying what counts as a yes or no answer."
+        }
       },
       "ScoreAnswerLegendAdditionalProperties": {
         "anyOf": [
@@ -1137,21 +1000,6 @@
         "description": "What the model should rate.",
         "x-accepts": "string | object | array"
       },
-      "ScoreQuestionCriteriaItem": {
-        "anyOf": [
-          {
-            "type": "string"
-          },
-          {
-            "type": "object"
-          },
-          {
-            "type": "array",
-            "items": {}
-          }
-        ],
-        "x-accepts": "string | object | array"
-      },
       "SystemOneRequestState": {
         "examples": [
           "I was charged twice. Please help.",
@@ -1185,125 +1033,6 @@
             "type": "integer"
           }
         ]
-      },
-      "ChoiceAnswerProbabilities": {
-        "examples": [
-          {
-            "angry": 0.8,
-            "calm": 0.1,
-            "excited": 0.1
-          }
-        ],
-        "title": "Probabilities",
-        "type": "object",
-        "additionalProperties": {
-          "type": "number"
-        },
-        "description": "Probability of each choice in criteria, keyed by choice name, from 0 to 1. Shows how likely the alternatives are; values sum to approximately 1."
-      },
-      "ChoiceQuestionCriteria": {
-        "examples": [
-          {
-            "angry": "An upset or hostile message",
-            "calm": "A neutral or polite message",
-            "excited": "An enthusiastic or eager message"
-          }
-        ],
-        "title": "Criteria",
-        "maxProperties": 255,
-        "minProperties": 1,
-        "type": "object",
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ChoiceQuestionCriteriaAdditionalProperties"
-        },
-        "description": "Choice names and descriptions of when each applies. A choice without a description is interpreted by its name alone."
-      },
-      "ScoreAnswerLegend": {
-        "examples": [
-          {
-            "0": "Can wait",
-            "1": "Needs attention this week",
-            "2": "Needs attention today"
-          }
-        ],
-        "title": "Legend",
-        "type": "object",
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
-        },
-        "description": "The requested criteria mapped to their score levels, so you can interpret the score."
-      },
-      "ScoreAnswerProbabilities": {
-        "examples": [
-          {
-            "0": 0.1,
-            "1": 0.1,
-            "2": 0.8
-          }
-        ],
-        "title": "Probabilities",
-        "type": "object",
-        "additionalProperties": {
-          "type": "number"
-        },
-        "description": "Probability of each score level, from 0 to 1, using the same keys as legend. Shows how likely the alternatives are; values sum to approximately 1."
-      },
-      "SystemOneRequestQuestions": {
-        "examples": [
-          {
-            "billing": {
-              "instructions": "Is this message about billing?",
-              "type": "noul"
-            }
-          }
-        ],
-        "title": "Questions",
-        "minProperties": 1,
-        "type": "object",
-        "additionalProperties": {
-          "$ref": "#/components/schemas/Question"
-        },
-        "description": "Questions to ask about the content, each with a name you choose. The response uses those names to identify the answers."
-      },
-      "SystemOneRequestAssets": {
-        "title": "Assets",
-        "minProperties": 1,
-        "type": "object",
-        "additionalProperties": {
-          "$ref": "#/components/schemas/Asset"
-        },
-        "description": "Media assets keyed by an opaque placeholder (recommend a per-image UUID). Each placeholder, wherever it appears as or inside a string in state, question instructions, or criteria, is replaced with the asset. Image assets require a vision-language model."
-      },
-      "SystemOneResponseAnswers": {
-        "examples": [
-          {
-            "billing": {
-              "noul": 0.98,
-              "type": "noul"
-            }
-          }
-        ],
-        "title": "Answers",
-        "minProperties": 1,
-        "type": "object",
-        "additionalProperties": {
-          "$ref": "#/components/schemas/Answer"
-        },
-        "description": "Answers keyed by the question names supplied in the request. Each answer\u0027s type matches its question\u0027s type."
-      },
-      "ValidationErrorCtx": {
-        "examples": [
-          {
-            "min_length": 1
-          }
-        ],
-        "title": "Context",
-        "type": "object",
-        "description": "Additional context used to explain the validation failure. Entries may be omitted or shortened."
-      },
-      "ExamplePayload": {
-        "type": "object",
-        "description": "Placeholder schema for path example refs"
       },
       "ChoiceAnswerProbabilitiesProperty": {
         "examples": [
@@ -1671,6 +1400,286 @@
             }
           ]
         }
+      },
+      "AnswerNoulAnswer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Answer"
+          },
+          {
+            "title": "NoulAnswer",
+            "required": [
+              "type",
+              "noul"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/NoulType"
+              },
+              "noul": {
+                "examples": [
+                  0.98
+                ],
+                "title": "Noul",
+                "type": "number",
+                "description": "Probability of a yes answer or a true statement, from 0 to 1. Values near 1 favor yes or true, values near 0 favor no or false, and values near 0.5 indicate uncertainty."
+              }
+            },
+            "description": "The probability of a yes answer or a true statement."
+          }
+        ]
+      },
+      "AnswerChoiceAnswer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Answer"
+          },
+          {
+            "title": "ChoiceAnswer",
+            "required": [
+              "type",
+              "choice",
+              "confidence",
+              "probabilities"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/ChoiceType"
+              },
+              "choice": {
+                "examples": [
+                  "angry"
+                ],
+                "title": "Choice",
+                "type": "string",
+                "description": "The name of the choice with the highest probability among the question\u0027s criteria."
+              },
+              "confidence": {
+                "examples": [
+                  0.9
+                ],
+                "title": "Confidence",
+                "type": "number",
+                "description": "Confidence in the selected choice, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain selections for review."
+              },
+              "probabilities": {
+                "$ref": "#/components/schemas/ChoiceAnswerProbabilitiesProperty"
+              }
+            },
+            "description": "The selected choice, confidence, and probabilities for a choice question."
+          }
+        ]
+      },
+      "AnswerScoreAnswer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Answer"
+          },
+          {
+            "title": "ScoreAnswer",
+            "required": [
+              "type",
+              "score",
+              "confidence",
+              "legend",
+              "probabilities"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/ScoreType"
+              },
+              "score": {
+                "examples": [
+                  1.7
+                ],
+                "title": "Score",
+                "type": "number",
+                "description": "Expected score: the probability-weighted average of the rubric levels. May fall between integer levels."
+              },
+              "confidence": {
+                "examples": [
+                  0.9
+                ],
+                "title": "Confidence",
+                "type": "number",
+                "description": "Confidence in the score, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain ratings for review."
+              },
+              "legend": {
+                "$ref": "#/components/schemas/ScoreAnswerLegendProperty"
+              },
+              "probabilities": {
+                "$ref": "#/components/schemas/ScoreAnswerProbabilitiesProperty"
+              }
+            },
+            "description": "An expected score with its rubric, confidence, and score-level probabilities."
+          }
+        ]
+      },
+      "AnswerBoxAnswer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Answer"
+          },
+          {
+            "title": "BoxAnswer",
+            "required": [
+              "type",
+              "box",
+              "confidence"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/BoxType"
+              },
+              "box": {
+                "description": "The box\u0027s edges as fractions of image height and width, from 0 to 1. Each coordinate is the expected value of its edge\u0027s predicted position.",
+                "examples": [
+                  {
+                    "bottom": 0.66,
+                    "left": 0.19,
+                    "right": 0.68,
+                    "top": 0.2
+                  }
+                ],
+                "$ref": "#/components/schemas/BoxCoordinates"
+              },
+              "confidence": {
+                "examples": [
+                  null,
+                  0.9
+                ],
+                "title": "Confidence",
+                "type": [
+                  "null",
+                  "number"
+                ],
+                "description": "Confidence for the given box, from 0 to 1, with 1 being more confident. Null when the model does not provide confidence."
+              }
+            },
+            "description": "A located box with normalized edge coordinates and confidence."
+          }
+        ]
+      },
+      "QuestionNoulQuestion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Question"
+          },
+          {
+            "title": "NoulQuestion",
+            "required": [
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/NoulQuestionType"
+              },
+              "instructions": {
+                "$ref": "#/components/schemas/NoulQuestionInstructions"
+              },
+              "criteria": {
+                "$ref": "#/components/schemas/NoulQuestionCriteria"
+              }
+            },
+            "description": "A yes/no question or statement, answered with the probability of yes or true."
+          }
+        ]
+      },
+      "QuestionChoiceQuestion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Question"
+          },
+          {
+            "title": "ChoiceQuestion",
+            "required": [
+              "type",
+              "criteria"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/ChoiceQuestionType"
+              },
+              "instructions": {
+                "$ref": "#/components/schemas/ChoiceQuestionInstructions"
+              },
+              "criteria": {
+                "$ref": "#/components/schemas/ChoiceQuestionCriteriaProperty"
+              }
+            },
+            "description": "A question that selects one option from the choices you define."
+          }
+        ]
+      },
+      "QuestionScoreQuestion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Question"
+          },
+          {
+            "title": "ScoreQuestion",
+            "required": [
+              "type",
+              "criteria"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/ScoreQuestionType"
+              },
+              "instructions": {
+                "$ref": "#/components/schemas/ScoreQuestionInstructions"
+              },
+              "criteria": {
+                "examples": [
+                  [
+                    "Can wait",
+                    "Needs attention this week",
+                    "Needs attention today"
+                  ]
+                ],
+                "title": "Criteria",
+                "maxItems": 10,
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
+                },
+                "description": "Ordered descriptions of the score levels. Each description\u0027s position determines its score, starting at zero."
+              }
+            },
+            "description": "A question that assigns a score using an ordered rubric."
+          }
+        ]
+      },
+      "QuestionBoxQuestion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Question"
+          },
+          {
+            "title": "BoxQuestion",
+            "required": [
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/BoxQuestionType"
+              },
+              "instructions": {
+                "$ref": "#/components/schemas/BoxQuestionInstructions"
+              }
+            },
+            "description": "A question that locates what its instructions describe in the request\u0027s image. Requests with box questions must send the header TypeSafe-Danger-Zone-Images: true."
+          }
+        ]
       }
     },
     "securitySchemes": {
@@ -1678,6 +1687,379 @@
         "type": "http",
         "scheme": "bearer"
       }
+    }
+  },
+  "x-client-unused-schemas": {
+    "BoxAnswer": {
+      "title": "BoxAnswer",
+      "required": [
+        "type",
+        "box",
+        "confidence"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/BoxType"
+        },
+        "box": {
+          "description": "The box\u0027s edges as fractions of image height and width, from 0 to 1. Each coordinate is the expected value of its edge\u0027s predicted position.",
+          "examples": [
+            {
+              "bottom": 0.66,
+              "left": 0.19,
+              "right": 0.68,
+              "top": 0.2
+            }
+          ],
+          "$ref": "#/components/schemas/BoxCoordinates"
+        },
+        "confidence": {
+          "examples": [
+            null,
+            0.9
+          ],
+          "title": "Confidence",
+          "type": [
+            "null",
+            "number"
+          ],
+          "description": "Confidence for the given box, from 0 to 1, with 1 being more confident. Null when the model does not provide confidence."
+        }
+      },
+      "description": "A located box with normalized edge coordinates and confidence."
+    },
+    "BoxQuestion": {
+      "title": "BoxQuestion",
+      "required": [
+        "type"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/BoxQuestionType"
+        },
+        "instructions": {
+          "$ref": "#/components/schemas/BoxQuestionInstructions"
+        }
+      },
+      "description": "A question that locates what its instructions describe in the request\u0027s image. Requests with box questions must send the header TypeSafe-Danger-Zone-Images: true."
+    },
+    "ChoiceAnswer": {
+      "title": "ChoiceAnswer",
+      "required": [
+        "type",
+        "choice",
+        "confidence",
+        "probabilities"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/ChoiceType"
+        },
+        "choice": {
+          "examples": [
+            "angry"
+          ],
+          "title": "Choice",
+          "type": "string",
+          "description": "The name of the choice with the highest probability among the question\u0027s criteria."
+        },
+        "confidence": {
+          "examples": [
+            0.9
+          ],
+          "title": "Confidence",
+          "type": "number",
+          "description": "Confidence in the selected choice, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain selections for review."
+        },
+        "probabilities": {
+          "$ref": "#/components/schemas/ChoiceAnswerProbabilitiesProperty"
+        }
+      },
+      "description": "The selected choice, confidence, and probabilities for a choice question."
+    },
+    "ChoiceQuestion": {
+      "title": "ChoiceQuestion",
+      "required": [
+        "type",
+        "criteria"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/ChoiceQuestionType"
+        },
+        "instructions": {
+          "$ref": "#/components/schemas/ChoiceQuestionInstructions"
+        },
+        "criteria": {
+          "$ref": "#/components/schemas/ChoiceQuestionCriteriaProperty"
+        }
+      },
+      "description": "A question that selects one option from the choices you define."
+    },
+    "NoulAnswer": {
+      "title": "NoulAnswer",
+      "required": [
+        "type",
+        "noul"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/NoulType"
+        },
+        "noul": {
+          "examples": [
+            0.98
+          ],
+          "title": "Noul",
+          "type": "number",
+          "description": "Probability of a yes answer or a true statement, from 0 to 1. Values near 1 favor yes or true, values near 0 favor no or false, and values near 0.5 indicate uncertainty."
+        }
+      },
+      "description": "The probability of a yes answer or a true statement."
+    },
+    "NoulCriteria": {
+      "title": "NoulCriteria",
+      "type": "object",
+      "properties": {
+        "true": {
+          "$ref": "#/components/schemas/NoulCriteriaTrue"
+        },
+        "false": {
+          "$ref": "#/components/schemas/NoulCriteriaFalse"
+        }
+      },
+      "description": "Criteria defining what counts as a yes or no answer."
+    },
+    "NoulQuestion": {
+      "title": "NoulQuestion",
+      "required": [
+        "type"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/NoulQuestionType"
+        },
+        "instructions": {
+          "$ref": "#/components/schemas/NoulQuestionInstructions"
+        },
+        "criteria": {
+          "$ref": "#/components/schemas/NoulQuestionCriteria"
+        }
+      },
+      "description": "A yes/no question or statement, answered with the probability of yes or true."
+    },
+    "ScoreAnswer": {
+      "title": "ScoreAnswer",
+      "required": [
+        "type",
+        "score",
+        "confidence",
+        "legend",
+        "probabilities"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/ScoreType"
+        },
+        "score": {
+          "examples": [
+            1.7
+          ],
+          "title": "Score",
+          "type": "number",
+          "description": "Expected score: the probability-weighted average of the rubric levels. May fall between integer levels."
+        },
+        "confidence": {
+          "examples": [
+            0.9
+          ],
+          "title": "Confidence",
+          "type": "number",
+          "description": "Confidence in the score, from 0 to 1. Higher values indicate greater certainty; use lower values to flag uncertain ratings for review."
+        },
+        "legend": {
+          "$ref": "#/components/schemas/ScoreAnswerLegendProperty"
+        },
+        "probabilities": {
+          "$ref": "#/components/schemas/ScoreAnswerProbabilitiesProperty"
+        }
+      },
+      "description": "An expected score with its rubric, confidence, and score-level probabilities."
+    },
+    "ScoreQuestion": {
+      "title": "ScoreQuestion",
+      "required": [
+        "type",
+        "criteria"
+      ],
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/components/schemas/ScoreQuestionType"
+        },
+        "instructions": {
+          "$ref": "#/components/schemas/ScoreQuestionInstructions"
+        },
+        "criteria": {
+          "examples": [
+            [
+              "Can wait",
+              "Needs attention this week",
+              "Needs attention today"
+            ]
+          ],
+          "title": "Criteria",
+          "maxItems": 10,
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
+          },
+          "description": "Ordered descriptions of the score levels. Each description\u0027s position determines its score, starting at zero."
+        }
+      },
+      "description": "A question that assigns a score using an ordered rubric."
+    },
+    "ScoreQuestionCriteriaItem": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object"
+        },
+        {
+          "type": "array",
+          "items": {}
+        }
+      ],
+      "x-accepts": "string | object | array"
+    },
+    "ChoiceAnswerProbabilities": {
+      "examples": [
+        {
+          "angry": 0.8,
+          "calm": 0.1,
+          "excited": 0.1
+        }
+      ],
+      "title": "Probabilities",
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "Probability of each choice in criteria, keyed by choice name, from 0 to 1. Shows how likely the alternatives are; values sum to approximately 1."
+    },
+    "ChoiceQuestionCriteria": {
+      "examples": [
+        {
+          "angry": "An upset or hostile message",
+          "calm": "A neutral or polite message",
+          "excited": "An enthusiastic or eager message"
+        }
+      ],
+      "title": "Criteria",
+      "maxProperties": 255,
+      "minProperties": 1,
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/components/schemas/ChoiceQuestionCriteriaAdditionalProperties"
+      },
+      "description": "Choice names and descriptions of when each applies. A choice without a description is interpreted by its name alone."
+    },
+    "ScoreAnswerLegend": {
+      "examples": [
+        {
+          "0": "Can wait",
+          "1": "Needs attention this week",
+          "2": "Needs attention today"
+        }
+      ],
+      "title": "Legend",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/components/schemas/ScoreAnswerLegendAdditionalProperties"
+      },
+      "description": "The requested criteria mapped to their score levels, so you can interpret the score."
+    },
+    "ScoreAnswerProbabilities": {
+      "examples": [
+        {
+          "0": 0.1,
+          "1": 0.1,
+          "2": 0.8
+        }
+      ],
+      "title": "Probabilities",
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "Probability of each score level, from 0 to 1, using the same keys as legend. Shows how likely the alternatives are; values sum to approximately 1."
+    },
+    "SystemOneRequestQuestions": {
+      "examples": [
+        {
+          "billing": {
+            "instructions": "Is this message about billing?",
+            "type": "noul"
+          }
+        }
+      ],
+      "title": "Questions",
+      "minProperties": 1,
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/components/schemas/Question"
+      },
+      "description": "Questions to ask about the content, each with a name you choose. The response uses those names to identify the answers."
+    },
+    "SystemOneRequestAssets": {
+      "title": "Assets",
+      "minProperties": 1,
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/components/schemas/Asset"
+      },
+      "description": "Media assets keyed by an opaque placeholder (recommend a per-image UUID). Each placeholder, wherever it appears as or inside a string in state, question instructions, or criteria, is replaced with the asset. Image assets require a vision-language model."
+    },
+    "SystemOneResponseAnswers": {
+      "examples": [
+        {
+          "billing": {
+            "noul": 0.98,
+            "type": "noul"
+          }
+        }
+      ],
+      "title": "Answers",
+      "minProperties": 1,
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/components/schemas/Answer"
+      },
+      "description": "Answers keyed by the question names supplied in the request. Each answer\u0027s type matches its question\u0027s type."
+    },
+    "ValidationErrorCtx": {
+      "examples": [
+        {
+          "min_length": 1
+        }
+      ],
+      "title": "Context",
+      "type": "object",
+      "description": "Additional context used to explain the validation failure. Entries may be omitted or shortened."
+    },
+    "ExamplePayload": {
+      "type": "object",
+      "description": "Placeholder schema for path example refs"
     }
   }
 }
